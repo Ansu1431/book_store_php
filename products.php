@@ -68,6 +68,15 @@ $type = isset($_GET['type']) ? $_GET['type'] : 'new';
                                 <button style='background:grey;color:white;border:none'>Rent</button>
                             </div>
                         </a>
+                        <form method="post" action="cart.php" style="margin-top:5px;">
+                            <input type="hidden" name="action" value="add">
+                            <input type="hidden" name="book_id" value="<?php echo $row['book_id']; ?>">
+                            <input type="hidden" name="book_title" value="<?php echo htmlspecialchars($row['book_title']); ?>">
+                            <input type="hidden" name="book_price" value="<?php echo $row['book_price']; ?>">
+                            <input type="hidden" name="book_img" value="<?php echo $row['book_img']; ?>">
+                            <input type="number" name="quantity" value="1" min="1" style="width:50px;">
+                            <button type="submit" style="background:#28a745;color:white;border:none;padding:5px 10px;margin-left:5px;">Add to Cart</button>
+                        </form>
                     </div>
                     <?php
                 }

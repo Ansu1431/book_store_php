@@ -138,6 +138,75 @@ while($row = $result->fetch_assoc()) {
   </div>
   </div>
 
+<?php
+// --- PURCHASE CART SECTION (session-based) ---
+session_start();
+if (!isset($_SESSION['purchase_cart'])) {
+    $_SESSION['purchase_cart'] = [];
+}
+// Handle add, update, remove actions
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    if ($_POST['action'] === 'add') {
+        $book_id = $_POST['book_id'];
+        $quantity = max(1, (int)$_POST['quantity']);
+        if (isset($_SESSION['purchase_cart'][$book_id])) {
+            $_SESSION['purchase_cart'][$book_id]['quantity'] += $quantity;
+        } else {
+            $_SESSION['purchase_cart'][$book_id] = [
+                'book_title' => $_POST['book_title'],
+                'book_price' => $_POST['book_price'],
+                'book_img' => $_POST['book_img'],
+                'quantity' => $quantity
+            ];
+        }
+    } elseif ($_POST['action'] === 'update') {
+        $book_id = $_POST['book_id'];
+        $quantity = max(1, (int)$_POST['quantity']);
+        if (isset($_SESSION['purchase_cart'][$book_id])) {
+            $_SESSION['purchase_cart'][$book_id]['quantity'] = $quantity;
+        }
+    } elseif ($_POST['action'] === 'remove') {
+        $book_id = $_POST['book_id'];
+        unset($_SESSION['purchase_cart'][$book_id]);
+    }
+}
+// Display purchase cart
+if (!empty($_SESSION['purchase_cart'])) {
+    echo "<h2>Purchase Cart</h2>";
+    echo "<table border='1' cellpadding='8'><tr><th>Book</th><th>Image</th><th>Price</th><th>Quantity</th><th>Total</th><th>Action</th></tr>";
+    $total = 0;
+    foreach ($_SESSION['purchase_cart'] as $book_id => $item) {
+        $item_total = $item['book_price'] * $item['quantity'];
+        $total += $item_total;
+        echo "<tr>";
+        echo "<td>" . htmlspecialchars($item['book_title']) . "</td>";
+        echo "<td><img src='admin/upload/" . htmlspecialchars($item['book_img']) . "' width='50'></td>";
+        echo "<td>" . number_format($item['book_price'], 2) . "</td>";
+        echo "<td>"
+            . "<form method='post' action='cart.php' style='display:inline;'>"
+            . "<input type='hidden' name='action' value='update'>"
+            . "<input type='hidden' name='book_id' value='" . $book_id . "'>"
+            . "<input type='number' name='quantity' value='" . $item['quantity'] . "' min='1' style='width:40px;'>"
+            . "<button type='submit'>Update</button>"
+            . "</form>"
+        . "</td>";
+        echo "<td>" . number_format($item_total, 2) . "</td>";
+        echo "<td>"
+            . "<form method='post' action='cart.php' style='display:inline;'>"
+            . "<input type='hidden' name='action' value='remove'>"
+            . "<input type='hidden' name='book_id' value='" . $book_id . "'>"
+            . "<button type='submit'>Remove</button>"
+            . "</form>"
+        . "</td>";
+        echo "</tr>";
+    }
+    echo "<tr><td colspan='4' align='right'><strong>Total:</strong></td><td colspan='2'><strong>" . number_format($total, 2) . "</strong></td></tr>";
+    echo "</table>";
+    echo "<br><a href='purchase.php' class='btn' style='background:#28a745;color:white;padding:8px 16px;text-decoration:none;'>Proceed to Checkout</a>";
+} else {
+    echo "<h2>Purchase Cart</h2><p>No items in your purchase cart.</p>";
+}
+?>
 
 </body>
 </html>
